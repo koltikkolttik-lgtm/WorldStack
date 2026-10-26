@@ -1,12 +1,15 @@
 package com.worldstack;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
 @Mod.EventBusSubscriber(modid = "worldstack")
 public class DimensionChunkManager {
@@ -20,12 +23,10 @@ public class DimensionChunkManager {
 
         if (!(event.player instanceof ServerPlayer player)) return;
 
-        // Проверяем раз в 5 секунд
         if (player.tickCount % UPDATE_INTERVAL != 0) return;
 
         ServerLevel current = player.getLevel();
 
-        // Пока проверяем только обычный мир
         if (current.dimension() != Level.OVERWORLD) return;
 
         ServerLevel nether = player.server.getLevel(Level.NETHER);
@@ -36,19 +37,26 @@ public class DimensionChunkManager {
         int chunkX = player.blockPosition().getX() >> 4;
         int chunkZ = player.blockPosition().getZ() >> 4;
 
-        // Получаем чанк Незера
         LevelChunk netherChunk = nether.getChunk(chunkX, chunkZ);
-
-        // Получаем чанк Энда
         LevelChunk endChunk = end.getChunk(chunkX, chunkZ);
 
-        // Проверка загрузки
-        if (netherChunk != null && endChunk != null) {
+        int x = player.blockPosition().getX();
+        int z = player.blockPosition().getZ();
 
-            System.out.println(
-                "[WorldStack] Neighbor chunks loaded at "
-                + chunkX + ", " + chunkZ
-            );
-        }
+        BlockPos netherPos = new BlockPos(x, 64, z);
+        BlockPos endPos = new BlockPos(x, 64, z);
+
+        int netherBlock = Block.getId(
+            netherChunk.getBlockState(netherPos)
+        );
+
+        int endBlock = Block.getId(
+            endChunk.getBlockState(endPos)
+        );
+
+        WorldStackNetwork.CHANNEL.send(
+            PacketDistributor.PLAYER.with(() -> player),
+            new WorldStackPacket(netherBlock, endBlock)
+        );
     }
 }
