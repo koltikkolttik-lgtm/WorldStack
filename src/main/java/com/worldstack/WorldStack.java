@@ -17,8 +17,9 @@ public class WorldStack {
     private static final String COOLDOWN = "WorldStackCooldown";
 
     public WorldStack() {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
+    MinecraftForge.EVENT_BUS.register(this);
+    WorldStackNetwork.register();
+}
 
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
