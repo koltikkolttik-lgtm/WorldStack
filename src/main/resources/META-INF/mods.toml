@@ -1,6 +1,24 @@
-{
-  "pack": {
-    "description": "WorldStack Mod Resources",
-    "pack_format": 8
-  }
-}
+modLoader="javafml"
+loaderVersion="[40,)"
+license="MIT"
+
+[[mods]]
+modId="worldstack"
+version="1.0.0"
+displayName="WorldStack"
+authors="koltikkolttik-lgtm"
+description="Vertical dimensions for Minecraft 1.18.2"
+
+[[dependencies.worldstack]]
+modId="forge"
+mandatory=true
+versionRange="[40.3.0,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.worldstack]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.18.2,1.19)"
+ordering="NONE"
+side="BOTH"
