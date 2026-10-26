@@ -4,7 +4,7 @@ license="MIT"
 
 [[mods]]
 modId="worldstack"
-version="1.1.0"
+version="1.2.0-alpha-1"
 displayName="WorldStack"
 authors="koltikkolttik-lgtm"
 description="Vertical dimensions for Minecraft 1.18.2"
