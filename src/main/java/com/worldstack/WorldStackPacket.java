@@ -11,26 +11,26 @@ public class WorldStackPacket {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private final int netherBlock;
-    private final int endBlock;
+    private final int[] netherBlocks;
+    private final int[] endBlocks;
 
-    public WorldStackPacket(int netherBlock, int endBlock) {
-        this.netherBlock = netherBlock;
-        this.endBlock = endBlock;
+    public WorldStackPacket(int[] netherBlocks, int[] endBlocks) {
+        this.netherBlocks = netherBlocks;
+        this.endBlocks = endBlocks;
     }
 
     public static void encode(
         WorldStackPacket packet,
         FriendlyByteBuf buffer
     ) {
-        buffer.writeInt(packet.netherBlock);
-        buffer.writeInt(packet.endBlock);
+        buffer.writeVarIntArray(packet.netherBlocks);
+        buffer.writeVarIntArray(packet.endBlocks);
     }
 
     public static WorldStackPacket decode(FriendlyByteBuf buffer) {
         return new WorldStackPacket(
-            buffer.readInt(),
-            buffer.readInt()
+            buffer.readVarIntArray(512),
+            buffer.readVarIntArray(512)
         );
     }
 
@@ -40,9 +40,9 @@ public class WorldStackPacket {
     ) {
         context.get().enqueueWork(() -> {
             LOGGER.info(
-                "[WorldStack] Received dimension data: Nether={}, End={}",
-                packet.netherBlock,
-                packet.endBlock
+                "[WorldStack] Received blocks: Nether={}, End={}",
+                packet.netherBlocks.length,
+                packet.endBlocks.length
             );
         });
 
