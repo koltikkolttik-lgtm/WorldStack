@@ -38,19 +38,33 @@ jobs:
           sed -i 's/examplemod/worldstack/g' gradle.properties
           sed -i 's/Example Mod/WorldStack/g' gradle.properties
 
+      - name: Fix resource files
+        run: |
+          mkdir -p src/main/resources/META-INF
+
+          cat > src/main/resources/pack.mcmeta <<'EOF'
+          {
+            "pack": {
+              "description": "WorldStack Resources",
+              "pack_format": 8
+            }
+          }
+          EOF
+
       - name: Build WorldStack
         run: |
           chmod +x gradlew
           ./gradlew clean build --no-daemon
 
-      - name: Check JAR
+      - name: Verify JAR resources
         run: |
-          echo "=== JAR FILES ==="
-          ls -lh build/libs/
-
-          echo "=== MOD CONTENTS ==="
+          echo "=== JAR CONTENTS ==="
           for file in build/libs/*.jar; do
-            jar tf "$file" | grep -E 'WorldStack|mods.toml'
+            echo "Checking: $file"
+            jar tf "$file" | grep -E 'pack.mcmeta|mods.toml|WorldStack.class'
+
+            echo "=== PACK METADATA ==="
+            unzip -p "$file" pack.mcmeta
           done
 
       - name: Upload JAR
