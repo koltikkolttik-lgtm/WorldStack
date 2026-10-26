@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Java 17
@@ -20,9 +20,20 @@ jobs:
       - name: Download Forge MDK
         run: |
           wget https://maven.minecraftforge.net/net/minecraftforge/forge/1.18.2-40.3.0/forge-1.18.2-40.3.0-mdk.zip
-          unzip -o forge-1.18.2-40.3.0-mdk.zip
+          mkdir forge-mdk
+          unzip forge-1.18.2-40.3.0-mdk.zip -d forge-mdk
 
-      - name: Build
+      - name: Prepare project
+        run: |
+          cp forge-mdk/build.gradle .
+          cp forge-mdk/settings.gradle .
+          cp forge-mdk/gradle.properties .
+          cp forge-mdk/gradlew .
+          cp -r forge-mdk/gradle .
+          sed -i "s/mod_id=examplemod/mod_id=worldstack/g" gradle.properties
+          sed -i "s/mod_name=Example Mod/mod_name=WorldStack/g" gradle.properties
+
+      - name: Build WorldStack
         run: |
           chmod +x gradlew
           ./gradlew build
@@ -30,5 +41,5 @@ jobs:
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
-          name: WorldStack
+          name: WorldStack-1.18.2-Forge
           path: build/libs/*.jar
