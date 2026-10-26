@@ -70,7 +70,7 @@ public class DimensionChunkManager {
 
         WorldStackNetwork.CHANNEL.send(
             PacketDistributor.PLAYER.with(() -> player),
-            new WorldStackPacket(netherBlocks, endBlocks)
+            new WorldStackPacket(baseX, baseZ, netherBlocks, endBlocks)
         );
     }
 }
