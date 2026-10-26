@@ -19,7 +19,7 @@ jobs:
 
       - name: Download Forge MDK
         run: |
-          wget https://maven.minecraftforge.net/net/minecraftforge/forge/1.18.2-40.3.0/forge-1.18.2-40.3.0-mdk.zip
+          wget -q https://maven.minecraftforge.net/net/minecraftforge/forge/1.18.2-40.3.0/forge-1.18.2-40.3.0-mdk.zip
           mkdir forge-mdk
           unzip -q forge-1.18.2-40.3.0-mdk.zip -d forge-mdk
 
@@ -31,31 +31,29 @@ jobs:
           cp forge-mdk/gradlew .
           cp -r forge-mdk/gradle .
 
-          echo "=== Source files ==="
-          find src -type f
-
-      - name: Configure mod
+      - name: Configure WorldStack
         run: |
           sed -i 's/examplemod/worldstack/g' build.gradle
           sed -i 's/Example Mod/WorldStack/g' build.gradle
+          sed -i 's/examplemod/worldstack/g' gradle.properties
+          sed -i 's/Example Mod/WorldStack/g' gradle.properties
 
       - name: Build WorldStack
         run: |
           chmod +x gradlew
           ./gradlew clean build --no-daemon
 
-      - name: Check JAR contents
+      - name: Check JAR
         run: |
-          echo "=== Built JAR files ==="
+          echo "=== JAR FILES ==="
           ls -lh build/libs/
 
-          echo "=== Checking WorldStack class ==="
+          echo "=== MOD CONTENTS ==="
           for file in build/libs/*.jar; do
-            echo "Checking $file"
-            jar tf "$file" | grep -E 'WorldStack|mods.toml|examplemod' || true
+            jar tf "$file" | grep -E 'WorldStack|mods.toml'
           done
 
-      - name: Upload WorldStack JAR
+      - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
           name: WorldStack-1.18.2-Forge
