@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class ClientDimensionData {
 
-    public static final int SIZE = 8;
+    public static final int SIZE = 16;
 
     private static int baseX;
     private static int baseZ;
@@ -21,8 +21,15 @@ public class ClientDimensionData {
         baseX = x;
         baseZ = z;
 
-        netherBlocks = Arrays.copyOf(nether, nether.length);
-        endBlocks = Arrays.copyOf(end, end.length);
+        netherBlocks = Arrays.copyOf(
+            nether,
+            nether.length
+        );
+
+        endBlocks = Arrays.copyOf(
+            end,
+            end.length
+        );
     }
 
     public static int getBaseX() {
