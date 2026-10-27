@@ -48,7 +48,7 @@ public class WorldStack {
         // ОБЫЧНЫЙ МИР
         if (dimension == Level.OVERWORLD) {
 
-            if (y < -60) {
+            if (y < -120) {
                 target = Level.NETHER;
                 targetY = 105;
             }
