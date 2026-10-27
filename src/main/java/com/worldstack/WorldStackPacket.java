@@ -41,11 +41,12 @@ public class WorldStackPacket {
     }
 
     public static WorldStackPacket decode(FriendlyByteBuf buffer) {
+
         return new WorldStackPacket(
             buffer.readInt(),
             buffer.readInt(),
-            buffer.readVarIntArray(512),
-            buffer.readVarIntArray(512)
+            buffer.readVarIntArray(4096),
+            buffer.readVarIntArray(4096)
         );
     }
 
@@ -53,7 +54,24 @@ public class WorldStackPacket {
         WorldStackPacket packet,
         Supplier<NetworkEvent.Context> context
     ) {
-        context.get().enqueueWork(() -> {
+        NetworkEvent.Context ctx = context.get();
+
+        ctx.enqueueWork(() -> {
+
+            if (packet.netherBlocks.length == 0) {
+
+                ClientDimensionData.clear();
+
+                return;
+            }
+
+            if (packet.netherBlocks.length != 4096) {
+                LOGGER.warn(
+                    "[WorldStack] Invalid Nether data length: {}",
+                    packet.netherBlocks.length
+                );
+                return;
+            }
 
             ClientDimensionData.update(
                 packet.baseX,
@@ -63,14 +81,11 @@ public class WorldStackPacket {
             );
 
             LOGGER.info(
-                "[WorldStack] Client data updated: X={}, Z={}, Nether={}, End={}",
-                packet.baseX,
-                packet.baseZ,
-                packet.netherBlocks.length,
-                packet.endBlocks.length
+                "[WorldStack] Alpha 8: Nether blocks received: {}",
+                packet.netherBlocks.length
             );
         });
 
-        context.get().setPacketHandled(true);
+        ctx.setPacketHandled(true);
     }
 }
