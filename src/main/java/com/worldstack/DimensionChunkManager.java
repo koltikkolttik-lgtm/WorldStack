@@ -13,64 +13,80 @@ import net.minecraftforge.network.PacketDistributor;
 @Mod.EventBusSubscriber(modid = "worldstack")
 public class DimensionChunkManager {
 
-    private static final int SIZE = 8;
+    private static final int SIZE = 16;
     private static final int UPDATE_INTERVAL = 100;
+
+    private static final int NETHER_ACTIVATION_Y = -40;
+    private static final int NETHER_SOURCE_Y = 60;
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
 
         if (event.phase != TickEvent.Phase.END) return;
+
         if (!(event.player instanceof ServerPlayer player)) return;
 
         if (player.tickCount % UPDATE_INTERVAL != 0) return;
 
-        if (player.getLevel().dimension() != Level.OVERWORLD) return;
+        if (player.getLevel().dimension() != Level.OVERWORLD) {
+            return;
+        }
+
+        // Не загружаем Незер, если игрок далеко
+        if (player.getY() >= NETHER_ACTIVATION_Y) {
+
+            WorldStackNetwork.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new WorldStackPacket(
+                    0,
+                    0,
+                    new int[0],
+                    new int[0]
+                )
+            );
+
+            return;
+        }
 
         ServerLevel nether = player.server.getLevel(Level.NETHER);
-        ServerLevel end = player.server.getLevel(Level.END);
 
-        if (nether == null || end == null) return;
+        if (nether == null) return;
 
         int[] netherBlocks = new int[SIZE * SIZE * SIZE];
-        int[] endBlocks = new int[SIZE * SIZE * SIZE];
 
-        int baseX = player.blockPosition().getX();
-        int baseZ = player.blockPosition().getZ();
+        int baseX = player.blockPosition().getX() - SIZE / 2;
+        int baseZ = player.blockPosition().getZ() - SIZE / 2;
 
         int index = 0;
+
+        BlockPos.MutableBlockPos pos =
+            new BlockPos.MutableBlockPos();
 
         for (int x = 0; x < SIZE; x++) {
             for (int y = 0; y < SIZE; y++) {
                 for (int z = 0; z < SIZE; z++) {
 
-                    BlockPos netherPos = new BlockPos(
+                    pos.set(
                         baseX + x,
-                        60 + y,
+                        NETHER_SOURCE_Y + y,
                         baseZ + z
                     );
 
-                    BlockPos endPos = new BlockPos(
-                        baseX + x,
-                        60 + y,
-                        baseZ + z
+                    netherBlocks[index++] = Block.getId(
+                        nether.getBlockState(pos)
                     );
-
-                    netherBlocks[index] = Block.getId(
-                        nether.getBlockState(netherPos)
-                    );
-
-                    endBlocks[index] = Block.getId(
-                        end.getBlockState(endPos)
-                    );
-
-                    index++;
                 }
             }
         }
 
         WorldStackNetwork.CHANNEL.send(
             PacketDistributor.PLAYER.with(() -> player),
-            new WorldStackPacket(baseX, baseZ, netherBlocks, endBlocks)
+            new WorldStackPacket(
+                baseX,
+                baseZ,
+                netherBlocks,
+                new int[0]
+            )
         );
     }
 }
