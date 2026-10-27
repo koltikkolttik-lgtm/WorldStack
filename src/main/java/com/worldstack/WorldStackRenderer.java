@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Camera;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 
@@ -24,9 +23,11 @@ import net.minecraftforge.fml.common.Mod;
 )
 public class WorldStackRenderer {
 
-    private static final int SIZE = 8;
+    private static final int SIZE = 16;
 
-    private static final int RENDER_Y = -80;
+    private static final int RENDER_Y = -96;
+
+    private static final int ACTIVATION_Y = -40;
 
     private static final int FULL_BRIGHT = 15728880;
 
@@ -41,16 +42,23 @@ public class WorldStackRenderer {
         Minecraft mc = Minecraft.getInstance();
 
         if (mc.level == null || mc.player == null) {
+            ClientDimensionData.clear();
             return;
         }
 
         if (mc.level.dimension() != Level.OVERWORLD) {
+            ClientDimensionData.clear();
+            return;
+        }
+
+        // Показываем Незер только возле нижней границы
+        if (mc.player.getY() >= ACTIVATION_Y) {
             return;
         }
 
         int[] blocks = ClientDimensionData.getNetherBlocks();
 
-        if (blocks.length != 512) {
+        if (blocks.length != SIZE * SIZE * SIZE) {
             return;
         }
 
@@ -82,17 +90,14 @@ public class WorldStackRenderer {
         int index = 0;
 
         for (int x = 0; x < SIZE; x++) {
-
             for (int y = 0; y < SIZE; y++) {
-
                 for (int z = 0; z < SIZE; z++) {
 
                     int blockId = blocks[index++];
 
-                    BlockState state =
-                        Block.stateById(blockId);
+                    BlockState state = Block.stateById(blockId);
 
-                    if (state.isAir() || !state.canOcclude()) {
+                    if (state.isAir()) {
                         continue;
                     }
 
