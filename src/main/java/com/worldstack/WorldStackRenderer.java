@@ -26,7 +26,7 @@ public class WorldStackRenderer {
 
     private static final int SIZE = 8;
 
-    private static final int RENDER_Y = -60;
+    private static final int RENDER_Y = -80;
 
     private static final int FULL_BRIGHT = 15728880;
 
@@ -92,7 +92,7 @@ public class WorldStackRenderer {
                     BlockState state =
                         Block.stateById(blockId);
 
-                    if (state.isAir()) {
+                    if (state.isAir() || !state.canOcclude()) {
                         continue;
                     }
 
